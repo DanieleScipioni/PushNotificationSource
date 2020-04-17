@@ -61,5 +61,12 @@ namespace PushNotificationSource.AppShell
             var vapidDetails = new VapidDetails("mailto:daniele.scipioni@gmail.com", publicKey, privateKey);
             await WebPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
         }
+
+        private void CreateKys_OnClick(object sender, RoutedEventArgs e)
+        {
+            VapidDetails keys = VapidHelper.GenerateVapidKeys();
+            PrivateKeyTextBox.Text = keys.PrivateKey;
+            PublicKeyTextBox.Text = keys.PublicKey;
+        }
     }
 }

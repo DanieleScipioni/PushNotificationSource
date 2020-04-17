@@ -3,7 +3,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      mc:Ignorable="d"
+      mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="500"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Page.Resources>
         <Style TargetType="TextBox" x:Key="PageTextBlockStyle">
@@ -11,25 +11,35 @@
             <Setter Property="IsReadOnly" Value="True"/>
         </Style>
     </Page.Resources>
-    <Grid>
-        <StackPanel Margin="20,20,20,20">
-            <TextBlock Text="Send push notification" Style="{ThemeResource HeaderTextBlockStyle}"/>
-            <TextBox x:Name="PublicKeyTextBox" Style="{StaticResource PageTextBlockStyle}"
+    <StackPanel Padding="20">
+        <TextBlock Text="Send push notification" Style="{ThemeResource HeaderTextBlockStyle}"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel HorizontalAlignment="Stretch">
+                <TextBox x:Name="PublicKeyTextBox" Style="{StaticResource PageTextBlockStyle}"
                      Header="Server Public Key" />
-            <TextBox x:Name="PrivateKeyTextBox" Style="{StaticResource PageTextBlockStyle}" 
+                <TextBox x:Name="PrivateKeyTextBox" Style="{StaticResource PageTextBlockStyle}" 
                      Header="Server Private Key" />
-            <TextBox x:Name="SubscriptionTextBox" Style="{StaticResource PageTextBlockStyle}"
-                     Header="Subscription json"
-                     IsReadOnly="False" TextWrapping="Wrap"
-                     PlaceholderText="Add here subscrition informations" MinHeight="250"/>
-            <TextBox x:Name="MessageTextBox" Style="{StaticResource PageTextBlockStyle}"
-                     IsReadOnly="False" TextWrapping="Wrap"
-                     Header="Message"
-                     PlaceholderText="Write here..."/>
-            <Button x:Name="ButtonPushToSelf"
-                    Content="Send"
-                    Click="ButtonSend_Click"
-                    Margin="0,12"/>
-        </StackPanel>
-    </Grid>
+            </StackPanel>
+            <Button Grid.Column="1" Style="{StaticResource TextBlockButtonStyle}"
+                    VerticalAlignment="Top" Margin="8" Click="CreateKys_OnClick">
+                <SymbolIcon Symbol="Refresh"/>
+            </Button>
+        </Grid>
+        <TextBox x:Name="SubscriptionTextBox" Style="{StaticResource PageTextBlockStyle}"
+                 Header="Subscription json"
+                 IsReadOnly="False" TextWrapping="Wrap"
+                 PlaceholderText="Add here subscrition informations" MinHeight="250"/>
+        <TextBox x:Name="MessageTextBox" Style="{StaticResource PageTextBlockStyle}"
+                 IsReadOnly="False" TextWrapping="Wrap"
+                 Header="Message"
+                 PlaceholderText="Write here..."/>
+        <Button x:Name="ButtonPushToSelf"
+                Content="Send"
+                Click="ButtonSend_Click"
+                Margin="0,12"/>
+    </StackPanel>
 </Page>
