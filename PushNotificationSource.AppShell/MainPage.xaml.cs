@@ -91,5 +91,13 @@ namespace PushNotificationSource.AppShell
             request.Data.Properties.Title = "Share keys";
             request.Data.Properties.Description = "Be carefull, sensitive data!";
         }
+
+        private void Copy_OnClick(object sender, RoutedEventArgs e)
+        {
+            DataPackage dataPackage = new DataPackage {RequestedOperation = DataPackageOperation.Copy};
+            string value = $"Public: {PublicKeyTextBox.Text}\nPrivate: {PrivateKeyTextBox.Text}";
+            dataPackage.SetText(value);
+            Clipboard.SetContent(dataPackage);
+        }
     }
 }

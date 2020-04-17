@@ -33,6 +33,10 @@
                         VerticalAlignment="Top" Margin="8" Click="Share_OnClick">
                     <SymbolIcon Symbol="Share" />
                 </Button>
+                <Button Style="{StaticResource TextBlockButtonStyle}"
+                        VerticalAlignment="Top" Margin="8" Click="Copy_OnClick">
+                    <SymbolIcon Symbol="Copy" />
+                </Button>
             </StackPanel>
         </Grid>
         <TextBox x:Name="SubscriptionTextBox" Style="{StaticResource PageTextBlockStyle}"
