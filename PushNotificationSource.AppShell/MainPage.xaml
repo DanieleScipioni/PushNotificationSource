@@ -24,10 +24,16 @@
                 <TextBox x:Name="PrivateKeyTextBox" Style="{StaticResource PageTextBlockStyle}" 
                      Header="Server Private Key" />
             </StackPanel>
-            <Button Grid.Column="1" Style="{StaticResource TextBlockButtonStyle}"
-                    VerticalAlignment="Top" Margin="8" Click="CreateKys_OnClick">
-                <SymbolIcon Symbol="Refresh"/>
-            </Button>
+            <StackPanel Grid.Column="1">
+                <Button Style="{StaticResource TextBlockButtonStyle}"
+                        VerticalAlignment="Top" Margin="8" Click="CreateKeys_OnClick">
+                    <SymbolIcon Symbol="Refresh" />
+                </Button>
+                <Button Style="{StaticResource TextBlockButtonStyle}"
+                        VerticalAlignment="Top" Margin="8" Click="Share_OnClick">
+                    <SymbolIcon Symbol="Share" />
+                </Button>
+            </StackPanel>
         </Grid>
         <TextBox x:Name="SubscriptionTextBox" Style="{StaticResource PageTextBlockStyle}"
                  Header="Subscription json"
