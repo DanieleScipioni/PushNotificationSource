@@ -3,6 +3,8 @@ using System;
 using System.Threading.Tasks;
 using WebPush;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System.Threading;
+using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 
@@ -29,9 +31,35 @@ namespace PushNotificationSource.AppShell
 
         private async void ButtonSend_Click(object sender, RoutedEventArgs e)
         {
-            MessageTextBox.Focus(FocusState.Programmatic);
-            ButtonPushToSelf.IsEnabled = false;
+            await SendScheduled(DateTime.Now);
+        }
 
+        private async void ButtonSendcheduled_Click(object sender, RoutedEventArgs e)
+        {
+            await SendScheduled(DateTime.Now.AddSeconds(10));
+        }
+
+        private async Task SendScheduled(DateTime sendSchedule)
+        {
+            MessageTextBox.Focus(FocusState.Programmatic);
+            DateTime now = DateTime.Now;
+            if (sendSchedule < now)
+            {
+                await Send();
+            }
+            else
+            {
+                ThreadPoolTimer.CreateTimer(TimerElapsedHandler, sendSchedule - now);
+            }
+        }
+
+        private async void TimerElapsedHandler(ThreadPoolTimer handler)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () => await Send());
+        }
+
+        private async Task Send()
+        {
             try
             {
                 await SendAsync(SubscriptionTextBox.Text, MessageTextBox.Text,
@@ -41,8 +69,6 @@ namespace PushNotificationSource.AppShell
             {
                 await new MessageDialog(ex.ToString()).ShowAsync();
             }
-
-            ButtonPushToSelf.IsEnabled = true;
         }
 
         public class Subscription
@@ -61,7 +87,7 @@ namespace PushNotificationSource.AppShell
             // ReSharper disable once UnusedAutoPropertyAccessor.Global
             public string Auth { get; set; }
         }
-
+        
         private static async Task SendAsync(string subscriptionJson, string payload, string publicKey, string privateKey)
         {
             var subscription = JsonConvert.DeserializeObject<Subscription>(subscriptionJson);
