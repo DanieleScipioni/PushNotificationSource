@@ -3,6 +3,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:appShell="using:PushNotificationSource.AppShell"
       mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="500"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Page.Resources>
@@ -55,14 +56,24 @@
             <TextBox x:Name="MessageTextBox" Style="{StaticResource PageTextBlockStyle}"
                      IsReadOnly="False" TextWrapping="Wrap"
                      PlaceholderText="Message..." />
-            <Button Grid.Column="1" x:Name="ButtonSendMessage"
+            <Button Grid.Column="1"
                     Click="ButtonSend_Click" Style="{StaticResource TextBlockButtonStyle}"
                     Margin="0,12">
                 <SymbolIcon Symbol="Send" />
             </Button>
-            <Button Grid.Column="2" x:Name="ButtonSendScheduledMessage"
-                    Click="ButtonSendcheduled_Click" Style="{StaticResource TextBlockButtonStyle}"
+            <Button Grid.Column="2"
+                    Style="{StaticResource TextBlockButtonStyle}"
                     Margin="0,12">
+                <Button.Flyout>
+                    <Flyout x:Name="SchedlulerFlayout">
+                        <Flyout.FlyoutPresenterStyle>
+                            <Style TargetType="FlyoutPresenter">
+                                <Setter Property="BorderBrush" Value="{StaticResource SystemAccentColor}"/>
+                            </Style>
+                        </Flyout.FlyoutPresenterStyle>
+                        <appShell:SchedulePicker x:Name="SchedulePicker" Click="ButtonSendcheduled_Click"/>
+                    </Flyout>
+                </Button.Flyout>
                 <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEE93;"/>
             </Button>
         </Grid>

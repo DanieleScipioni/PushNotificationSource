@@ -7,6 +7,7 @@ using Windows.System.Threading;
 using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 namespace PushNotificationSource.AppShell
 {
@@ -23,6 +24,7 @@ namespace PushNotificationSource.AppShell
             DataTransferManager dataTransferManager = DataTransferManager.GetForCurrentView();
             dataTransferManager.DataRequested += DataTransferManager_DataRequested;
 
+            SchedlulerFlayout.Opened += SchedlulerFlayoutOnOpened;
             Unloaded += (sender, args) =>
             {
                 dataTransferManager.DataRequested -= DataTransferManager_DataRequested;
@@ -36,7 +38,8 @@ namespace PushNotificationSource.AppShell
 
         private async void ButtonSendcheduled_Click(object sender, RoutedEventArgs e)
         {
-            await SendScheduled(DateTime.Now.AddSeconds(10));
+            DateTimeOffset schedulePickerDateTime = SchedulePicker.DateTime;
+            await SendScheduled(schedulePickerDateTime.DateTime);
         }
 
         private async Task SendScheduled(DateTime sendSchedule)
@@ -124,6 +127,11 @@ namespace PushNotificationSource.AppShell
             string value = $"Public: {PublicKeyTextBox.Text}\nPrivate: {PrivateKeyTextBox.Text}";
             dataPackage.SetText(value);
             Clipboard.SetContent(dataPackage);
+        }
+
+        private void SchedlulerFlayoutOnOpened(object sender, object e)
+        {
+            SchedulePicker.DateTime = DateTimeOffset.Now.AddSeconds(5);
         }
     }
 }
