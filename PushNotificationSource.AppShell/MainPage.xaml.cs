@@ -1,8 +1,11 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using WebPush;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 using Windows.System.Threading;
 using Windows.UI.Core;
 using Windows.UI.Popups;
@@ -15,20 +18,30 @@ namespace PushNotificationSource.AppShell
     {
         private static readonly WebPushClient WebPushClient = new WebPushClient();
 
+        private readonly DispatcherTimer _vaidatorTimer;
+        private readonly string _currentKeysFileName = "currentKeys.txt";
+
         public MainPage()
         {
             InitializeComponent();
-            PublicKeyTextBox.Text = "BBrspYRJxJQYsqzVp8FuRPqOQ9L6F5vRbIMQu9CeiYGEP68aEVem5b6e1QK2BQYgNIKh4nORAyjKYEZAE7D5SAA";
-            PrivateKeyTextBox.Text = "HByTkaPfAXU1TA5eIVqQfLKYAXwRYo388Lx63vXI5OA";
 
             DataTransferManager dataTransferManager = DataTransferManager.GetForCurrentView();
             dataTransferManager.DataRequested += DataTransferManager_DataRequested;
 
             SchedlulerFlayout.Opened += SchedlulerFlayoutOnOpened;
-            Unloaded += (sender, args) =>
-            {
-                dataTransferManager.DataRequested -= DataTransferManager_DataRequested;
-            };
+            Loaded += OnLoaded;
+            Unloaded += (sender, args) => { dataTransferManager.DataRequested -= DataTransferManager_DataRequested; };
+
+            _vaidatorTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            _vaidatorTimer.Tick += VaidatorTimerOnTick;
+        }
+
+        private async void OnLoaded(object sender, RoutedEventArgs args)
+        {
+            (string privateKey, string publicKey) = await ReadCurrentKeys();
+
+            PublicKeyTextBox.Text = publicKey;
+            PrivateKeyTextBox.Text = privateKey;
         }
 
         private async void ButtonSend_Click(object sender, RoutedEventArgs e)
@@ -68,43 +81,43 @@ namespace PushNotificationSource.AppShell
                 await SendAsync(SubscriptionTextBox.Text, MessageTextBox.Text,
                     PublicKeyTextBox.Text, PrivateKeyTextBox.Text);
             }
-            catch (Exception ex)
+            catch (WebPushException ex)
             {
-                await new MessageDialog(ex.ToString()).ShowAsync();
+                var exceptionMessage = new StringBuilder(ex.Message).AppendLine(ex.Headers.ToString()).ToString();
+                await new MessageDialog(exceptionMessage).ShowAsync();
             }
         }
 
         public class Subscription
         {
-            // ReSharper disable once UnusedAutoPropertyAccessor.Global
-            public string ChannelUri { get; set; }
-            // ReSharper disable once UnusedAutoPropertyAccessor.Global
+            public string ChannelUri;
             public SubscriptionKeys Keys { get; set; }
         }
 
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class SubscriptionKeys
         {
-            // ReSharper disable once UnusedAutoPropertyAccessor.Global
-            public string P256Dh { get; set; }
-            // ReSharper disable once UnusedAutoPropertyAccessor.Global
-            public string Auth { get; set; }
+            public string P256Dh;
+            public string Auth;
         }
-        
-        private static async Task SendAsync(string subscriptionJson, string payload, string publicKey, string privateKey)
+
+        private static async Task SendAsync(string subscriptionJson, string payload, string publicKey,
+            string privateKey)
         {
             var subscription = JsonConvert.DeserializeObject<Subscription>(subscriptionJson);
 
-            var pushSubscription = new PushSubscription(subscription.ChannelUri, subscription.Keys.P256Dh, subscription.Keys.Auth);
+            var pushSubscription =
+                new PushSubscription(subscription.ChannelUri, subscription.Keys.P256Dh, subscription.Keys.Auth);
             var vapidDetails = new VapidDetails("mailto:daniele.scipioni@gmail.com", publicKey, privateKey);
             await WebPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
         }
 
-        private void CreateKeys_OnClick(object sender, RoutedEventArgs e)
+        private async void CreateKeys_OnClick(object sender, RoutedEventArgs e)
         {
             VapidDetails keys = VapidHelper.GenerateVapidKeys();
             PrivateKeyTextBox.Text = keys.PrivateKey;
             PublicKeyTextBox.Text = keys.PublicKey;
+
+            await PersistCurrentKeys(keys);
         }
 
         private void Share_OnClick(object sender, RoutedEventArgs e)
@@ -123,7 +136,7 @@ namespace PushNotificationSource.AppShell
 
         private void Copy_OnClick(object sender, RoutedEventArgs e)
         {
-            DataPackage dataPackage = new DataPackage {RequestedOperation = DataPackageOperation.Copy};
+            DataPackage dataPackage = new DataPackage { RequestedOperation = DataPackageOperation.Copy };
             string value = $"Public: {PublicKeyTextBox.Text}\nPrivate: {PrivateKeyTextBox.Text}";
             dataPackage.SetText(value);
             Clipboard.SetContent(dataPackage);
@@ -132,6 +145,57 @@ namespace PushNotificationSource.AppShell
         private void SchedlulerFlayoutOnOpened(object sender, object e)
         {
             SchedulePicker.DateTime = DateTimeOffset.Now.AddSeconds(5);
+        }
+
+        private async void VaidatorTimerOnTick(object sender, object e)
+        {
+            _vaidatorTimer.Stop();
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                try
+                {
+                    var subscription = JsonConvert.DeserializeObject<Subscription>(SubscriptionTextBox.Text);
+                    SendButton.IsEnabled = ScheduleButton.IsEnabled =
+                        subscription?.ChannelUri != null && subscription.Keys != null;
+                }
+                catch
+                {
+                    SendButton.IsEnabled = ScheduleButton.IsEnabled = false;
+                }
+            });
+        }
+
+        private void SubscriptionTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            _vaidatorTimer.Stop();
+            _vaidatorTimer.Start();
+        }
+
+        private async Task PersistCurrentKeys(VapidDetails keys)
+        {
+            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+            StorageFile storageFile =
+                await localFolder.CreateFileAsync(_currentKeysFileName, CreationCollisionOption.OpenIfExists);
+            await FileIO.WriteLinesAsync(storageFile, new[] { keys.PrivateKey, keys.PublicKey });
+        }
+
+        private async Task<(string privateKey, string publicKey)> ReadCurrentKeys()
+        {
+            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+            if (await localFolder.TryGetItemAsync(_currentKeysFileName) is StorageFile storageFile)
+            {
+                IList<string> lines = await FileIO.ReadLinesAsync(storageFile);
+                if (lines.Count == 2)
+                {
+                    string privateKey = lines[0];
+                    string publicKey = lines[1];
+                    return (privateKey, publicKey);
+                }
+
+                return (null, null);
+            }
+
+            return ("HByTkaPfAXU1TA5eIVqQfLKYAXwRYo388Lx63vXI5OA", "BBrspYRJxJQYsqzVp8FuRPqOQ9L6F5vRbIMQu9CeiYGEP68aEVem5b6e1QK2BQYgNIKh4nORAyjKYEZAE7D5SAA");
         }
     }
 }

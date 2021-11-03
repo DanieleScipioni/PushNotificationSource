@@ -46,6 +46,7 @@
         <TextBox x:Name="SubscriptionTextBox" Style="{StaticResource PageTextBlockStyle}"
                  Header="Subscription json"
                  IsReadOnly="False" TextWrapping="Wrap"
+                 TextChanged="SubscriptionTextBox_OnTextChanged"
                  PlaceholderText="Add here subscrition informations" MinHeight="250"/>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -54,14 +55,14 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBox x:Name="MessageTextBox" Style="{StaticResource PageTextBlockStyle}"
-                     IsReadOnly="False" TextWrapping="Wrap"
+                     IsReadOnly="False" TextWrapping="Wrap" AcceptsReturn="True" 
                      PlaceholderText="Message..." />
-            <Button Grid.Column="1"
+            <Button Grid.Column="1" x:Name="SendButton" IsEnabled="False"
                     Click="ButtonSend_Click" Style="{StaticResource TextBlockButtonStyle}"
                     Margin="0,12">
                 <SymbolIcon Symbol="Send" />
             </Button>
-            <Button Grid.Column="2"
+            <Button Grid.Column="2" x:Name="ScheduleButton" IsEnabled="False"
                     Style="{StaticResource TextBlockButtonStyle}"
                     Margin="0,12">
                 <Button.Flyout>
