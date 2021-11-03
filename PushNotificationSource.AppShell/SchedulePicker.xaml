@@ -6,12 +6,12 @@
              mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="400">
 
     <Grid>
-        <StackPanel>
+        <StackPanel Spacing="8">
             <DatePicker x:Name="DatePicker" SelectedDateChanged="DatePicker_OnSelectedDateChanged"
                         HorizontalAlignment="Stretch"/>
             <TimePicker x:Name="TimePicker" SelectedTimeChanged="TimePicker_OnSelectedTimeChanged"
                         HorizontalAlignment="Stretch"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
                 <Button Style="{StaticResource TextBlockButtonStyle}"
                         Click="ButtonMinus5_OnClick">-5</Button>
                 <Button Style="{StaticResource TextBlockButtonStyle}"
