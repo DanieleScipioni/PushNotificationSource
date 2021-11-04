@@ -18,6 +18,9 @@ namespace PushNotificationSource.AppShell
     {
         private static readonly WebPushClient WebPushClient = new WebPushClient();
 
+        private const string DefaultPrivateKey = "HByTkaPfAXU1TA5eIVqQfLKYAXwRYo388Lx63vXI5OA";
+        private const string DefaultPublicKey = "BBrspYRJxJQYsqzVp8FuRPqOQ9L6F5vRbIMQu9CeiYGEP68aEVem5b6e1QK2BQYgNIKh4nORAyjKYEZAE7D5SAA";
+
         private readonly DispatcherTimer _vaidatorTimer;
         private readonly string _currentKeysFileName = "currentKeys.txt";
 
@@ -39,7 +42,6 @@ namespace PushNotificationSource.AppShell
         private async void OnLoaded(object sender, RoutedEventArgs args)
         {
             (string privateKey, string publicKey) = await ReadCurrentKeys();
-
             PublicKeyTextBox.Text = publicKey;
             PrivateKeyTextBox.Text = privateKey;
         }
@@ -120,6 +122,17 @@ namespace PushNotificationSource.AppShell
             await PersistCurrentKeys(keys);
         }
 
+        private async void ResetKeys_OnClick(object sender, RoutedEventArgs e)
+        {
+            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+            if (await localFolder.TryGetItemAsync(_currentKeysFileName) is StorageFile storageFile)
+            {
+                await storageFile.DeleteAsync(StorageDeleteOption.PermanentDelete);
+            }
+            PublicKeyTextBox.Text = DefaultPublicKey;
+            PrivateKeyTextBox.Text = DefaultPrivateKey;
+        }
+
         private void Share_OnClick(object sender, RoutedEventArgs e)
         {
             DataTransferManager.ShowShareUI();
@@ -195,7 +208,7 @@ namespace PushNotificationSource.AppShell
                 return (null, null);
             }
 
-            return ("HByTkaPfAXU1TA5eIVqQfLKYAXwRYo388Lx63vXI5OA", "BBrspYRJxJQYsqzVp8FuRPqOQ9L6F5vRbIMQu9CeiYGEP68aEVem5b6e1QK2BQYgNIKh4nORAyjKYEZAE7D5SAA");
+            return (DefaultPrivateKey, DefaultPublicKey);
         }
     }
 }

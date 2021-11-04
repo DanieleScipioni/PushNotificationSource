@@ -31,6 +31,10 @@
             <StackPanel Grid.Column="1">
                 <Button Style="{StaticResource RightButtonStyle}"
                         VerticalAlignment="Top" Click="CreateKeys_OnClick">
+                    <SymbolIcon Symbol="Shuffle" />
+                </Button>
+                <Button Style="{StaticResource RightButtonStyle}"
+                        VerticalAlignment="Top" Click="ResetKeys_OnClick">
                     <SymbolIcon Symbol="Refresh" />
                 </Button>
                 <Button Style="{StaticResource RightButtonStyle}"
